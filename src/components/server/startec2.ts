@@ -1,8 +1,7 @@
 "use server";
-import { client } from "@/lib/client";
+import { client, keyPair, securityGroup } from "@/lib/client";
 import {
   type _InstanceType,
-  EC2Client,
   RunInstancesCommand,
   RunInstancesCommandInput,
 } from "@aws-sdk/client-ec2";
@@ -10,37 +9,20 @@ import {
 interface FormData {
   amiId: string;
   instanceType: _InstanceType;
-  volumeSize: string;
+  // volumeSize: string;
   instanceName: string;
 }
 
 export default async function StartEc2(data: FormData): Promise<any> {
-  const { amiId, instanceType, volumeSize, instanceName }: FormData = data;
+  const { amiId, instanceType,  }: FormData = data;
 
   const params: RunInstancesCommandInput = {
+    KeyName: keyPair,
+    SecurityGroupIds: [securityGroup],
     ImageId: amiId,
     InstanceType: instanceType,
     MinCount: 1,
     MaxCount: 1,
-    BlockDeviceMappings: [
-      {
-        DeviceName: "/dev/sda1",
-        Ebs: {
-          VolumeSize: parseInt(volumeSize),
-        },
-      },
-    ],
-    TagSpecifications: [
-      {
-        ResourceType: "instance",
-        Tags: [
-          {
-            Key: "Name",
-            Value: instanceName,
-          },
-        ],
-      },
-    ],
   };
 
   try {

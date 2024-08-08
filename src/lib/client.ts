@@ -1,6 +1,4 @@
 import { EC2Client } from "@aws-sdk/client-ec2";
-import { fromEnv } from "@aws-sdk/credential-provider-env";
-
 
 const config={
   region: String(process.env.NEXT_PUBLIC_AWS_REGION),
@@ -9,5 +7,9 @@ const config={
       secretAccessKey:String(process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY),
     }}
 
-// export const REGION = "us-east-1";
 export const client = new EC2Client(config);
+
+export const securityGroup = String(process.env.NEXT_PUBLIC_AWS_SECURITY_GROUP)
+export const keyPair = String(process.env.NEXT_PUBLIC_AWS_KEY_PAIR)
+
+

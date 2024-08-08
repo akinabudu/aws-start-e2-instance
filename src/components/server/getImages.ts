@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from "react";
-// import AWS from 'aws-sdk';
+'use server'
 import { client } from "@/lib/client";
 import { DescribeImagesCommand } from "@aws-sdk/client-ec2";
 
@@ -9,7 +8,6 @@ const AmiDetails = async () => {
     try {
       const data = await client.send(command);
       if (data.Images) {
-        // console.log(data);
         return data.Images;
       }
     } catch (err) {

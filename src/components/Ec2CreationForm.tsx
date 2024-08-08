@@ -25,17 +25,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import StartEc2 from "./server/startec2";
 import AmiDetails from "./server/getImages";
+import { getInstances } from "./server/getInstances";
 
 const formSchema = z.object({
   amiId: z.string().min(1, { message: "AMI ID is required" }),
   instanceType: z.enum(["t2.micro", "t2.small", "t2.medium"]),
-  volumeSize: z.string().refine(
-    (val) => {
-      const num = parseInt(val);
-      return num >= 8 && num <= 1000;
-    },
-    { message: "Volume size must be between 8 and 1000 GB" }
-  ),
   instanceName: z.string().min(1, { message: "Instance name is required" }),
 });
 
@@ -56,27 +50,24 @@ const EC2CreationForm: React.FC = () => {
     getData();
   }, []);
 
-  // Initialize the form with default values and validation rules
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       amiId: "",
       instanceType: "t2.micro",
-      volumeSize: "8",
       instanceName: "",
     },
   });
 
   const onSubmit = async (data: FormData) => {
-    // await AmiDetails();
     setMessage(null);
     try {
       const result = await StartEc2(data);
-
+      const getInstanceIp = await getInstances(result.instanceId);
       if (result.instanceId) {
         setMessage({
           type: "success",
-          text: `EC2 instance created with ID: ${result.instanceId}`,
+          text: `EC2 instance created with IP: ${getInstanceIp}`,
         });
       } else {
         throw new Error(result.error || "Failed to create EC2 instance");
@@ -179,7 +170,7 @@ const EC2CreationForm: React.FC = () => {
                 </FormItem>
               )}
             />
-            <FormField
+            {/* <FormField
               control={form.control}
               name="volumeSize"
               render={({ field }) => (
@@ -194,7 +185,7 @@ const EC2CreationForm: React.FC = () => {
                   <FormMessage />
                 </FormItem>
               )}
-            />
+            /> */}
             <FormField
               control={form.control}
               name="instanceName"
@@ -211,8 +202,8 @@ const EC2CreationForm: React.FC = () => {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full">
-              Create EC2 Instance
+            <Button type="submit" disabled={!form.formState.isValid || form.formState.isSubmitting} className="w-full">
+              {form.formState.isSubmitting?"Creating Instance...":"Create EC2 Instance"}
             </Button>
           </form>
         </Form>
